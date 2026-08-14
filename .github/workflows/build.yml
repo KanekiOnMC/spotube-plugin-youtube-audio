@@ -1,4 +1,4 @@
-Name: Plugin Build
+name: Plugin Build
 
 on:
   workflow_dispatch:
