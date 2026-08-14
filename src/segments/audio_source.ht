@@ -4,14 +4,14 @@ import "module:std" as std
 class Converter {
   static fun toSpotubeMatchObject(res) {
     return res.map((d) => {
-      return {
-        id: d["id"],
-        title: d["title"],
-        artists: [d["author"]],
-        duration: d["duration"],
-        thumbnail: d["thumbnail"],
-        externalUri: "https://youtube.com/watch?v=" + d["id"]
-      }.toJson()
+      var m = Map()
+      m["id"] = d["id"]
+      m["title"] = d["title"]
+      m["artists"] = [d["author"]]
+      m["duration"] = d["duration"]
+      m["thumbnail"] = d["thumbnail"]
+      m["externalUri"] = "https://youtube.com/watch?v=" + d["id"]
+      return m.toJson()
     }).toList()
   }
 }
@@ -24,10 +24,27 @@ class AudioSourceEndpoint {
   }
 
   get supportedPresets {
-    return [
-      { type: "lossy", name: "mp4", qualities: [ { bitrate: 256000 }, { bitrate: 128000 }, { bitrate: 96000 }, { bitrate: 44000 } ] }.toJson(),      
-      { type: "lossy", name: "webm", qualities: [ { bitrate: 256000 }, { bitrate: 128000 }, { bitrate: 96000 }, { bitrate: 44000 } ] }.toJson()
+    var p1 = Map()
+    p1["type"] = "lossy"
+    p1["name"] = "mp4"
+    p1["qualities"] = [
+      { bitrate: 256000 },
+      { bitrate: 128000 },
+      { bitrate: 96000 },
+      { bitrate: 44000 }
     ]
+
+    var p2 = Map()
+    p2["type"] = "lossy"
+    p2["name"] = "webm"
+    p2["qualities"] = [
+      { bitrate: 256000 },
+      { bitrate: 128000 },
+      { bitrate: 96000 },
+      { bitrate: 44000 }
+    ]
+
+    return [p1.toJson(), p2.toJson()]
   }
   
   fun matches(track) {
@@ -55,12 +72,14 @@ class AudioSourceEndpoint {
       }
 
       return filtered.map((stream) => {
-        url: stream["url"],
-        container: stream["container"],
-        type: "lossless",
-        codec: stream["container"] == "webm" ? "opus" : "aac",
-        bitrate: stream["bitrate"]
-      }.toJson()).toList()
+        var sm = Map()
+        sm["url"] = stream["url"]
+        sm["container"] = stream["container"]
+        sm["type"] = "lossless"
+        sm["codec"] = stream["container"] == "webm" ? "opus" : "aac"
+        sm["bitrate"] = stream["bitrate"]
+        return sm.toJson()
+      }).toList()
     })
   }
 }
