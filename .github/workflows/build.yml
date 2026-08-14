@@ -7,7 +7,7 @@ on:
         type: string
         description: 'Version (x.x.x)'
         required: true
-        default: 'continuous'
+        default: '1.0.0'
 
 permissions:
   contents: write
@@ -56,7 +56,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.event.inputs.version }}
+          tag: v${{ github.event.inputs.version }}
+          name: Release v${{ github.event.inputs.version }}
           omitBodyDuringUpdate: true
           omitNameDuringUpdate: true
           omitPrereleaseDuringUpdate: true
