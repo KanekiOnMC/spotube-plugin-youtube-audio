@@ -1,7 +1,4 @@
-Import "module:spotube" as spotube
 import "module:std" as std
-
-var YouTubeEngine = spotube.YouTubeEngine
 
 class Converter {
   static fun toSpotubeMatchObject(res: List) -> List<Map> {
@@ -19,7 +16,7 @@ class Converter {
 }
 
 class AudioSourceEndpoint {
-  var yt: YouTubeEngine
+  var yt: dynamic
   construct () {
     yt = YouTubeEngine()
   }
