@@ -39,6 +39,9 @@ jobs:
       - name: Install hetu_script_dev_tools
         run: dart pub global activate hetu_script_dev_tools
 
+      - name: Ensure pub global bin is in PATH
+        run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
       - name: Run build & archive
         run: |
           make
