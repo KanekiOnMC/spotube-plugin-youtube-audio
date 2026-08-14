@@ -1,3 +1,4 @@
+Import "module:spotube" as spotube
 import "module:std" as std
 
 class Converter {
@@ -18,7 +19,7 @@ class Converter {
 class AudioSourceEndpoint {
   var yt: dynamic
   construct () {
-    yt = YouTubeEngine()
+    yt = spotube.YouTubeEngine()
   }
 
   get supportedPresets -> List {
