@@ -1,7 +1,7 @@
-Import "module:spotube_plugin" as spotube_plugin
+Import "module:spotube" as spotube
 import "module:std" as std
 
-var YouTubeEngine = spotube_plugin.YouTubeEngine
+var YouTubeEngine = spotube.YouTubeEngine
 
 class Converter {
   static fun toSpotubeMatchObject(res: List) -> List<Map> {
