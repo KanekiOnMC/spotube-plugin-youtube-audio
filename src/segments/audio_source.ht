@@ -3,18 +3,19 @@ import "module:std" as std
 
 class Converter {
   static fun toSpotubeMatchObject(res) {
-    var result = []
+    var list = []
+    if (res == null) return list
     for (var d in res) {
-      var m = Map()
-      m["id"] = d["id"]
-      m["title"] = d["title"]
-      m["artists"] = [d["author"]]
-      m["duration"] = d["duration"]
-      m["thumbnail"] = d["thumbnail"]
-      m["externalUri"] = "https://youtube.com/watch?v=" + d["id"]
-      result.add(m.toJson())
+      var map = Map()
+      map["id"] = d["id"]
+      map["title"] = d["title"]
+      map["artists"] = [d["author"]]
+      map["duration"] = d["duration"]
+      map["thumbnail"] = d["thumbnail"]
+      map["externalUri"] = "https://youtube.com/watch?v=" + d["id"]
+      list.add(map)
     }
-    return result
+    return list
   }
 }
 
@@ -29,25 +30,40 @@ class AudioSourceEndpoint {
     var p1 = Map()
     p1["type"] = "lossy"
     p1["name"] = "mp4"
-    p1["qualities"] = [{bitrate: 256000}, {bitrate: 128000}, {bitrate: 96000}, {bitrate: 44000}]
-    
+    var q1 = Map()
+    q1["bitrate"] = 256000
+    p1["qualities"] = [q1]
+
     var p2 = Map()
     p2["type"] = "lossy"
     p2["name"] = "webm"
-    p2["qualities"] = [{bitrate: 256000}, {bitrate: 128000}, {bitrate: 96000}, {bitrate: 44000}]
-    
-    return [p1.toJson(), p2.toJson()]
+    var q2 = Map()
+    q2["bitrate"] = 256000
+    p2["qualities"] = [q2]
+
+    return [p1, p2]
   }
   
   fun matches(track) {
-    final artists = track["artists"].map((a) => a["name"]).join(", ")
-    final hasISRC = track["isrc"] != null && track["isrc"] != ""
+    var artistsList = track["artists"]
+    var artists = ""
+    if (artistsList != null) {
+      var names = []
+      for (var a in artistsList) {
+        names.add(a["name"])
+      }
+      artists = names.join(", ")
+    }
     
-    val query = hasISRC ? track["isrc"] : (track["name"] + " " + artists)
+    var isrc = track["isrc"]
+    var hasISRC = isrc != null && isrc != ""
+    var query = hasISRC ? isrc : (track["name"] + " " + artists)
 
     return yt.search(query).then((res) {
-      if (res.isEmpty && hasISRC) {
-        return yt.search(track["name"] + " " + artists).then((res2) => Converter.toSpotubeMatchObject(res2))
+      if ((res == null || res.isEmpty) && hasISRC) {
+        return yt.search(track["name"] + " " + artists).then((res2) {
+          return Converter.toSpotubeMatchObject(res2)
+        })
       }
       return Converter.toSpotubeMatchObject(res)
     })
@@ -55,10 +71,23 @@ class AudioSourceEndpoint {
 
   fun streams(match) {
     return yt.streamManifest(match["id"]).then((manifest) {
-      var filtered = manifest.filter((stream) => stream["container"] == "webm")
-      if (filtered.isEmpty) {
-        filtered = manifest.filter((stream) => stream["container"] == "mp4")
+      if (manifest == null) return []
+      
+      var filtered = []
+      for (var stream in manifest) {
+        if (stream["container"] == "webm") {
+          filtered.add(stream)
+        }
       }
+      
+      if (filtered.isEmpty) {
+        for (var stream in manifest) {
+          if (stream["container"] == "mp4") {
+            filtered.add(stream)
+          }
+        }
+      }
+
       if (filtered.isEmpty) {
         filtered = manifest
       }
@@ -71,7 +100,7 @@ class AudioSourceEndpoint {
         sm["type"] = "lossless"
         sm["codec"] = (stream["container"] == "webm") ? "opus" : "aac"
         sm["bitrate"] = stream["bitrate"]
-        result.add(sm.toJson())
+        result.add(sm)
       }
       return result
     })
