@@ -1,4 +1,4 @@
-Import "module:spotube" as spotube
+import "module:spotube" as spotube
 import "module:std" as std
 
 class Converter {
