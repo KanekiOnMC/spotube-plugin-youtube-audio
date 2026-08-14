@@ -1,11 +1,6 @@
-name: Plugin Build
+Name: Plugin Build
+
 on:
-  # push:
-  #   branches:
-  #     - main
-  # pull_request:
-  #   branches:
-  #     - main
   workflow_dispatch:
     inputs:
       version:
@@ -24,26 +19,38 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Flutter
+      - name: Setup Flutter & Caching
         uses: subosito/flutter-action@v2
         with:
           channel: stable
           flutter-version: 3.35.2
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+          cache-path: "${{ runner.tool_cache }}/flutter"
 
-      - name: Install dependencies
+      - name: Cache Dart pub global
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Install hetu_script_dev_tools
         run: dart pub global activate hetu_script_dev_tools
-      
-      - name: Run build
-        run: make
 
-      - name: Archive plugin
-        run: make archive
+      - name: Run build & archive
+        run: |
+          make
+          make archive
         shell: bash
       
       - name: Upload plugin archive
         uses: actions/upload-artifact@v4
         with:
+          name: plugin-artifact
           path: build/plugin.smplug
+          retention-days: 3
 
       - name: Upload to release (${{ github.event.inputs.version }})
         uses: ncipollo/release-action@v1
@@ -55,4 +62,3 @@ jobs:
           omitPrereleaseDuringUpdate: true
           allowUpdates: true
           artifacts: build/plugin.smplug
-      
