@@ -3,7 +3,8 @@ import "module:std" as std
 
 class Converter {
   static fun toSpotubeMatchObject(res) {
-    return res.map((d) => {
+    var result = []
+    for (var d in res) {
       var m = Map()
       m["id"] = d["id"]
       m["title"] = d["title"]
@@ -11,8 +12,9 @@ class Converter {
       m["duration"] = d["duration"]
       m["thumbnail"] = d["thumbnail"]
       m["externalUri"] = "https://youtube.com/watch?v=" + d["id"]
-      return m.toJson()
-    }).toList()
+      result.add(m.toJson())
+    }
+    return result
   }
 }
 
@@ -27,23 +29,13 @@ class AudioSourceEndpoint {
     var p1 = Map()
     p1["type"] = "lossy"
     p1["name"] = "mp4"
-    p1["qualities"] = [
-      { bitrate: 256000 },
-      { bitrate: 128000 },
-      { bitrate: 96000 },
-      { bitrate: 44000 }
-    ]
-
+    p1["qualities"] = [{bitrate: 256000}, {bitrate: 128000}, {bitrate: 96000}, {bitrate: 44000}]
+    
     var p2 = Map()
     p2["type"] = "lossy"
     p2["name"] = "webm"
-    p2["qualities"] = [
-      { bitrate: 256000 },
-      { bitrate: 128000 },
-      { bitrate: 96000 },
-      { bitrate: 44000 }
-    ]
-
+    p2["qualities"] = [{bitrate: 256000}, {bitrate: 128000}, {bitrate: 96000}, {bitrate: 44000}]
+    
     return [p1.toJson(), p2.toJson()]
   }
   
@@ -71,15 +63,17 @@ class AudioSourceEndpoint {
         filtered = manifest
       }
 
-      return filtered.map((stream) => {
+      var result = []
+      for (var stream in filtered) {
         var sm = Map()
         sm["url"] = stream["url"]
         sm["container"] = stream["container"]
         sm["type"] = "lossless"
-        sm["codec"] = stream["container"] == "webm" ? "opus" : "aac"
+        sm["codec"] = (stream["container"] == "webm") ? "opus" : "aac"
         sm["bitrate"] = stream["bitrate"]
-        return sm.toJson()
-      }).toList()
+        result.add(sm.toJson())
+      }
+      return result
     })
   }
 }
